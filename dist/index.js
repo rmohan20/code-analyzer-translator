@@ -59,8 +59,29 @@ function commentTest() {
     return __awaiter(this, void 0, void 0, function* () {
         const pullRequest = github.context.payload;
         const githubToken = core.getInput('github_token');
-        const octoKit = github.getOctokit(githubToken);
-        yield octoKit.rest.pulls.createReviewComment(Object.assign(Object.assign({}, github.context.repo), { pull_number: pullRequest.number, body: "Test data", path: "force-app/main/default/classes/Cat.cls", line: 3 }));
+        const octokit = github.getOctokit(githubToken);
+        // await octoKit.rest.pulls.({
+        //   ...github.context.repo,
+        //   pull_number: pullRequest.number,
+        //   body: "Test data",
+        //   path: "force-app/main/default/classes/Cat.cls",
+        //   line: 3
+        // });
+        yield octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/comments', {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            pull_number: pullRequest.number,
+            body: 'Testing comments',
+            // commit_id: '6dcb09b5b57875f334f61aebed695e2e4193db5e',
+            path: 'force-app/main/default/classes/Cat.cls',
+            // start_line: 1,
+            // start_side: 'RIGHT',
+            line: 3,
+            // side: 'RIGHT',
+            headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
+        });
     });
 }
 run();
