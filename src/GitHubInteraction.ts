@@ -13,7 +13,7 @@ export class GitHubInteraction {
             pull_number: CONTEXT.payload.number
         });
 
-        core.info(`pulls = ${pulls}`);
+        core.info(`pulls = ${JSON.stringify(pulls)}`);
 
         const commit = pulls.data.commits.toString();
 

@@ -47,7 +47,7 @@ class GitHubInteraction {
         return __awaiter(this, void 0, void 0, function* () {
             const octokit = github.getOctokit(this.github_token);
             const pulls = yield octokit.rest.pulls.get(Object.assign(Object.assign({}, CONTEXT.repo), { pull_number: CONTEXT.payload.number }));
-            core.info(`pulls = ${pulls}`);
+            core.info(`pulls = ${JSON.stringify(pulls)}`);
             const commit = pulls.data.commits.toString();
             const reviewComment = yield octokit.rest.pulls.createReviewComment(Object.assign(Object.assign({}, CONTEXT.repo), { pull_number: CONTEXT.payload.number, body: "Testing comments", commit_id: commit, path: "Cat.cls", line: 3, in_reply_to: undefined }));
             core.info(`reviewComment = ${reviewComment}`);
