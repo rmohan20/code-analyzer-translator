@@ -1,6 +1,64 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 502:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GitHubInteraction = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
+const CONTEXT = github.context;
+class GitHubInteraction {
+    constructor() {
+        this.github_token = core.getInput('github_token');
+    }
+    queryPullRequest() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const octokit = github.getOctokit(this.github_token);
+            const pulls = yield octokit.rest.pulls.get(Object.assign(Object.assign({}, CONTEXT.repo), { pull_number: CONTEXT.payload.number }));
+            core.info(`pulls = ${pulls}`);
+            const commit = pulls.data.commits.toString();
+            const reviewComment = yield octokit.rest.pulls.createReviewComment(Object.assign(Object.assign({}, CONTEXT.repo), { pull_number: CONTEXT.payload.number, body: "Testing comments", commit_id: commit, path: "Cat.cls", line: 3, in_reply_to: undefined }));
+            core.info(`reviewComment = ${reviewComment}`);
+        });
+    }
+}
+exports.GitHubInteraction = GitHubInteraction;
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -36,13 +94,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const github = __importStar(__nccwpck_require__(5438));
+const GitHubInteraction_1 = __nccwpck_require__(502);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const jsonStr = core.getInput('jsonstring');
             core.info(`json string received: ${jsonStr}`);
-            yield commentTest();
+            const interaction = new GitHubInteraction_1.GitHubInteraction();
+            interaction.queryPullRequest();
             // core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
             // core.debug(new Date().toTimeString())
             // await wait(parseInt(ms, 10))
@@ -55,35 +114,33 @@ function run() {
         }
     });
 }
-function commentTest() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const pullRequest = github.context.payload;
-        const githubToken = core.getInput('github_token');
-        const octokit = github.getOctokit(githubToken);
-        // await octoKit.rest.pulls.({
-        //   ...github.context.repo,
-        //   pull_number: pullRequest.number,
-        //   body: "Test data",
-        //   path: "force-app/main/default/classes/Cat.cls",
-        //   line: 3
-        // });
-        yield octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/comments', {
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            pull_number: pullRequest.number,
-            body: 'Testing comments',
-            // commit_id: '6dcb09b5b57875f334f61aebed695e2e4193db5e',
-            path: 'force-app/main/default/classes/Cat.cls',
-            // start_line: 1,
-            // start_side: 'RIGHT',
-            line: 3,
-            // side: 'RIGHT',
-            headers: {
-                'X-GitHub-Api-Version': '2022-11-28'
-            }
-        });
-    });
-}
+// async function commentTest(): Promise<void> {
+//   const pullRequest = github.context.payload;
+//   const githubToken = core.getInput('github_token');
+//   const octokit = github.getOctokit(githubToken);
+//   // await octoKit.rest.pulls.({
+//   //   ...github.context.repo,
+//   //   pull_number: pullRequest.number,
+//   //   body: "Test data",
+//   //   path: "force-app/main/default/classes/Cat.cls",
+//   //   line: 3
+//   // });
+//   await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/comments', {
+//     owner: github.context.repo.owner,
+//     repo: github.context.repo.repo,
+//     pull_number: pullRequest.number,
+//     body: 'Testing comments',
+//     commit_id: ,
+//     path: 'force-app/main/default/classes/Cat.cls',
+//     // start_line: 1,
+//     // start_side: 'RIGHT',
+//     line: 3,
+//     // side: 'RIGHT',
+//     headers: {
+//       'X-GitHub-Api-Version': '2022-11-28'
+//     }
+//   })
+// }
 run();
 
 
