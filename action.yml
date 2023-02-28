@@ -1,5 +1,5 @@
 name: 'Code Analyzer PR Buddy'
-description: 'Converts SFCA\'s JSON outfile into comments on PR'
+description: 'Converts SFCA JSON outfile into comments on PR'
 author: 'Roopa Mohan'
 inputs:
   github_token:
