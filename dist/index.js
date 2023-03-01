@@ -48,8 +48,8 @@ class GitHubInteraction {
             const octokit = github.getOctokit(this.github_token);
             const pulls = yield octokit.rest.pulls.get(Object.assign(Object.assign({}, CONTEXT.repo), { pull_number: CONTEXT.payload.number }));
             core.info(`pulls = ${JSON.stringify(pulls)}`);
-            const commit = pulls.data.commits.toString();
-            const reviewComment = yield octokit.rest.pulls.createReviewComment(Object.assign(Object.assign({}, CONTEXT.repo), { pull_number: CONTEXT.payload.number, body: "Testing comments", commit_id: commit, path: "Cat.cls", line: 3, in_reply_to: undefined }));
+            const commit = pulls.data.merge_commit_sha;
+            const reviewComment = yield octokit.rest.pulls.createReviewComment(Object.assign(Object.assign({}, CONTEXT.repo), { pull_number: CONTEXT.payload.number, body: "Testing comments", commit_id: undefined, path: "force-app/main/default/classes/Cat.cls", line: 3, in_reply_to: undefined }));
             core.info(`reviewComment = ${reviewComment}`);
         });
     }

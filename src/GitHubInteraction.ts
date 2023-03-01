@@ -15,14 +15,14 @@ export class GitHubInteraction {
 
         core.info(`pulls = ${JSON.stringify(pulls)}`);
 
-        const commit = pulls.data.commits.toString();
+        const commit = pulls.data.merge_commit_sha;
 
         const reviewComment = await octokit.rest.pulls.createReviewComment({
             ...CONTEXT.repo,
             pull_number: CONTEXT.payload.number,
             body: "Testing comments",
-            commit_id: commit,
-            path: "Cat.cls",
+            commit_id: undefined,
+            path: "force-app/main/default/classes/Cat.cls",
             line: 3,
             in_reply_to: undefined
         });
