@@ -27,11 +27,13 @@ export class Violations {
 
     summarizeRuleResult(ruleResult: RuleResult): void {
         core.summary.addHeading(`${ruleResult.engine}, ${ruleResult.fileName}`, 2);
-        ruleResult.violations.forEach(violation => this.summarizeViolation(violation));
+        ruleResult.violations.forEach(violation => {
+            core.summary.addHeading(`${violation.ruleName}: ${violation.message}`, 3);
+        });
     }
 
     summarizeViolation(ruleViolation: RuleViolation): void {
-        core.summary.addHeading(`${ruleViolation.ruleName}: ${ruleViolation.message}`, 4);
+        
         // core.summary.addLink(ruleViolation.ruleName, `${ruleViolation.url}`);
     }
 }
