@@ -26,12 +26,12 @@ export class Violations {
     }
 
     summarizeRuleResult(ruleResult: RuleResult): void {
-        core.summary.addHeading(`${ruleResult.engine}, ${ruleResult.fileName}`, 2);
+        core.summary.addHeading(`${ruleResult.engine}, ${ruleResult.fileName}`, 4);
         ruleResult.violations.forEach(violation => this.summarizeViolation(violation));
     }
 
     summarizeViolation(ruleViolation: RuleViolation): void {
-        core.summary.addRaw(`${ruleViolation.ruleName}: ${ruleViolation.message}`);
-        core.summary.addLink(ruleViolation.ruleName, `${ruleViolation.url}`);
+        core.summary.addRaw(`- ${ruleViolation.ruleName}: ${ruleViolation.message}`);
+        // core.summary.addLink(ruleViolation.ruleName, `${ruleViolation.url}`);
     }
 }
