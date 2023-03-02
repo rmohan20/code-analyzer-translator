@@ -27,7 +27,7 @@ export class Violations {
 
     summarizeRuleResult(ruleResult: RuleResult): void {
         core.summary.addHeading(`${ruleResult.engine}, ${ruleResult.fileName}`, 2);
-        
+        ruleResult.violations.forEach(violation => this.summarizeViolation(violation));
     }
 
     summarizeViolation(ruleViolation: RuleViolation): void {
