@@ -8,6 +8,17 @@ inputs:
   jsonstring:
     required: true
     description: 'JSON output from SFCA generated using --outfile or --format json'
+  skiprules:
+    required: false
+    description: 'Rules you want to skip from results. Provide array of rule names.'
+    default: []
+  skipcategories:
+    required: false
+    description: 'Categories you want to skip from results. Provide array of category names.'
+    default: []
+  minseverity:
+    required: false
+    description: 'Lowest severity you want to see in the results. Provide normalized severity number. Make sure your results are normalized.'
 runs:
   using: 'node16'
   main: 'dist/index.js'

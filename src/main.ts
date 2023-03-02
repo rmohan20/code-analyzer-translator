@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { GitHubInteraction } from './GitHubInteraction';
+import { Violations } from './Violations';
 
 async function run(): Promise<void> {
   try {
@@ -8,8 +9,11 @@ async function run(): Promise<void> {
 
     core.info(`json string received: ${jsonStr}`);
 
-    const interaction = new GitHubInteraction();
-    interaction.queryPullRequest();
+    const violations = new Violations();
+    await violations.summarize(jsonStr);
+
+    // const interaction = new GitHubInteraction();
+    // interaction.queryPullRequest();
     
     // core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
 
