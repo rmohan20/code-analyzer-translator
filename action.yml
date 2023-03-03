@@ -8,6 +8,9 @@ inputs:
   jsonstring:
     required: true
     description: 'JSON output from SFCA generated using --outfile or --format json'
+  runtype:
+    required: true
+    description: '"dfa" if results are associated with a DFA run, "simple" otherwise.'
   # skiprules:
   #   required: false
   #   description: 'Rules you want to skip from results. Provide array of rule names.'

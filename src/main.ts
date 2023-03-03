@@ -6,11 +6,12 @@ import { Violations } from './Violations';
 async function run(): Promise<void> {
   try {
     const jsonStr: string = core.getInput('jsonstring');
+    const runtype: string = core.getInput('runtype');
 
     core.info(`json string received: ${jsonStr}`);
 
     const violations = new Violations();
-    await violations.summarize(jsonStr);
+    await violations.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
 
     // const interaction = new GitHubInteraction();
     // interaction.queryPullRequest();

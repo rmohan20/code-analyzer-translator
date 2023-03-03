@@ -38,7 +38,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Violations = void 0;
 const core = __importStar(__nccwpck_require__(186));
 class Violations {
-    summarize(jsonString) {
+    summarize(jsonString, isDfa) {
         return __awaiter(this, void 0, void 0, function* () {
             const ruleResult = JSON.parse(jsonString);
             //         await core.summary
@@ -54,20 +54,38 @@ class Violations {
             //   .write()
             core.summary.addHeading("Code Analyzer Results", 1);
             // TODO: regroup by filename
-            ruleResult.forEach(result => this.summarizeRuleResult(result));
+            ruleResult.forEach(result => this.summarizeRuleResult(result, isDfa));
             yield core.summary.write();
         });
     }
-    summarizeRuleResult(ruleResult) {
+    summarizeRuleResult(ruleResult, isDfa) {
         core.summary.addHeading(`${ruleResult.engine}: ${ruleResult.fileName}`, 3);
-        const tableData = [[{ data: 'Rule', header: true }, { data: 'Message', header: true }]];
-        ruleResult.violations.forEach(violation => {
-            tableData.push(this.summarizeViolation(violation));
-        });
+        const tableData = [];
+        if (isDfa) {
+            tableData.push(this.dfaViolationHeader());
+            ruleResult.violations.forEach(violation => {
+                tableData.push(this.summarizeDfaViolation(violation));
+            });
+        }
+        else {
+            tableData.push(this.simpleViolationHeader());
+            ruleResult.violations.forEach(violation => {
+                tableData.push(this.summarizeSimpleViolation(violation));
+            });
+        }
         core.summary.addTable(tableData);
     }
-    summarizeViolation(ruleViolation) {
-        return [ruleViolation.ruleName, ruleViolation.message];
+    simpleViolationHeader() {
+        return [{ data: 'Rule', header: true }, { data: 'Message', header: true }, { data: 'Line', header: true }, { data: 'Column', header: true }];
+    }
+    summarizeSimpleViolation(simpleViolation) {
+        return [simpleViolation.ruleName, simpleViolation.message, `${simpleViolation.line}`, `${simpleViolation.column}`];
+    }
+    dfaViolationHeader() {
+        return [{ data: 'Rule', header: true }, { data: 'Message', header: true }, { data: 'Sink Filename', header: true }, { data: 'Sink Line', header: true }, { data: 'Sink Column', header: true }];
+    }
+    summarizeDfaViolation(dfaViolation) {
+        return [dfaViolation.ruleName, dfaViolation.message, `${dfaViolation.sinkFileName}`, `${dfaViolation.sinkLine}`, `${dfaViolation.sinkColumn}`];
     }
 }
 exports.Violations = Violations;
@@ -115,9 +133,10 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const jsonStr = core.getInput('jsonstring');
+            const runtype = core.getInput('runtype');
             core.info(`json string received: ${jsonStr}`);
             const violations = new Violations_1.Violations();
-            yield violations.summarize(jsonStr);
+            yield violations.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
             // const interaction = new GitHubInteraction();
             // interaction.queryPullRequest();
             // core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true

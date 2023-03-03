@@ -1,9 +1,9 @@
-import { RuleResult, RuleViolation } from "./types";
+import { RuleResult, RuleViolation, PathlessRuleViolation, DfaRuleViolation } from "./types";
 import * as core from '@actions/core'
 import { SummaryTableRow } from "@actions/core/lib/summary";
 
 export class Violations {
-    async summarize(jsonString: string): Promise<void> {
+    async summarize(jsonString: string, isDfa: boolean): Promise<void> {
         const ruleResult: RuleResult[]  = JSON.parse(jsonString);
 
 //         await core.summary
@@ -21,24 +21,44 @@ export class Violations {
         core.summary.addHeading("Code Analyzer Results", 1);
         // TODO: regroup by filename
         
-        ruleResult.forEach(result => this.summarizeRuleResult(result));
+        ruleResult.forEach(result => this.summarizeRuleResult(result, isDfa));
 
         await core.summary.write();
     }
 
-    summarizeRuleResult(ruleResult: RuleResult): void {
+    summarizeRuleResult(ruleResult: RuleResult, isDfa: boolean): void {
         core.summary.addHeading(`${ruleResult.engine}: ${ruleResult.fileName}`, 3);
         
-        const tableData: SummaryTableRow[] = [[{data: 'Rule', header: true}, {data: 'Message', header: true}]];
-        ruleResult.violations.forEach(violation => {
-            tableData.push(this.summarizeViolation(violation));
-        });
+        const tableData: SummaryTableRow[] = [];
+
+        if (isDfa) {
+            tableData.push(this.dfaViolationHeader());
+            ruleResult.violations.forEach(violation => {
+                tableData.push(this.summarizeDfaViolation(violation as DfaRuleViolation));
+            });
+        } else {
+            tableData.push(this.simpleViolationHeader());
+            ruleResult.violations.forEach(violation => {
+                tableData.push(this.summarizeSimpleViolation(violation as PathlessRuleViolation));
+            });
+        }
+        
 
         core.summary.addTable(tableData);
         
     }
 
-    summarizeViolation(ruleViolation: RuleViolation): string[] {
-        return [ruleViolation.ruleName, ruleViolation.message]
+    simpleViolationHeader(): SummaryTableRow {
+        return [{data: 'Rule', header: true}, {data: 'Message', header: true}, {data: 'Line', header: true}, {data: 'Column', header: true}]
+    }
+    summarizeSimpleViolation(simpleViolation: PathlessRuleViolation): SummaryTableRow {
+        return [simpleViolation.ruleName, simpleViolation.message, `${simpleViolation.line}`, `${simpleViolation.column}`]
+    }
+
+    dfaViolationHeader(): SummaryTableRow {
+        return [{data: 'Rule', header: true}, {data: 'Message', header: true}, {data: 'Sink Filename', header: true}, {data: 'Sink Line', header: true}, {data: 'Sink Column', header: true}]
+    }
+    summarizeDfaViolation(dfaViolation: DfaRuleViolation): SummaryTableRow {
+        return [dfaViolation.ruleName, dfaViolation.message, `${dfaViolation.sinkFileName}`, `${dfaViolation.sinkLine}`, `${dfaViolation.sinkColumn}`]
     }
 }
