@@ -37,22 +37,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Violations = void 0;
 const core = __importStar(__nccwpck_require__(186));
+// Mapping severities to emojis to display
+const SEVERITY_TO_EMOJI_MAP = new Map([
+    [1, ':firecracker:'],
+    [2, ':zap:'],
+    [3, ':yellow_circle:'],
+    [4, ':warning:'],
+    [5, ':warning:']
+]);
 class Violations {
     summarize(jsonString, isDfa) {
         return __awaiter(this, void 0, void 0, function* () {
             const ruleResult = JSON.parse(jsonString);
-            //         await core.summary
-            //   .addHeading('Code Analyzer Results')
-            //   .addCodeBlock(generateTestResults(), "js")
-            //   .addTable([
-            //     [{data: 'File', header: true}, {data: 'Result', header: true}],
-            //     ['foo.js', 'Pass '],
-            //     ['bar.js', 'Fail '],
-            //     ['test.js', 'Pass ']
-            //   ])
-            //   .addLink('View staging deployment!', 'https://github.com')
-            //   .write()
-            core.summary.addHeading("Code Analyzer Results", 1);
+            core.summary.addHeading(":mag: Code Analyzer Results", 1);
             // TODO: regroup by filename
             ruleResult.forEach(result => this.summarizeRuleResult(result, isDfa));
             yield core.summary.write();
@@ -76,16 +73,42 @@ class Violations {
         core.summary.addTable(tableData);
     }
     simpleViolationHeader() {
-        return [{ data: 'Rule', header: true }, { data: 'Message', header: true }, { data: 'Line', header: true }, { data: 'Column', header: true }];
+        return [{ data: 'Sev', header: true }, { data: 'Rule', header: true }, { data: 'Message', header: true }, { data: 'Line', header: true }, { data: 'Column', header: true }];
     }
     summarizeSimpleViolation(simpleViolation) {
-        return [`<a href="${simpleViolation.url}">${simpleViolation.ruleName}</a>`, simpleViolation.message, `${simpleViolation.line}`, `${simpleViolation.column}`];
+        return [
+            `${this.getViolationSeverity(simpleViolation.severity, simpleViolation.normalizedSeverity)}`,
+            `<a href="${simpleViolation.url}">${simpleViolation.ruleName}</a>`,
+            simpleViolation.message,
+            `${simpleViolation.line}`,
+            `${simpleViolation.column}`
+        ];
     }
     dfaViolationHeader() {
-        return [{ data: 'Rule', header: true }, { data: 'Message', header: true }, { data: 'Sink Filename', header: true }, { data: 'Sink Line', header: true }, { data: 'Sink Column', header: true }];
+        return [{ data: 'Sev', header: true }, { data: 'Rule', header: true }, { data: 'Message', header: true }, { data: 'Sink Filename', header: true }, { data: 'Sink Line', header: true }, { data: 'Sink Column', header: true }];
     }
     summarizeDfaViolation(dfaViolation) {
-        return [`<a href="${dfaViolation.url}">${dfaViolation.ruleName}</a>`, dfaViolation.message, `${dfaViolation.sinkFileName}`, `${dfaViolation.sinkLine}`, `${dfaViolation.sinkColumn}`];
+        return [
+            `${this.getViolationSeverity(dfaViolation.severity, dfaViolation.normalizedSeverity)}`,
+            `<a href="${dfaViolation.url}">${dfaViolation.ruleName}</a>`,
+            dfaViolation.message,
+            `${dfaViolation.sinkFileName}`,
+            `${dfaViolation.sinkLine}`,
+            `${dfaViolation.sinkColumn}`
+        ];
+    }
+    getViolationSeverity(severity, normalizedSeverity) {
+        let returnVal;
+        if (normalizedSeverity) {
+            returnVal = SEVERITY_TO_EMOJI_MAP.get(normalizedSeverity);
+        }
+        else {
+            returnVal = SEVERITY_TO_EMOJI_MAP.get(severity);
+        }
+        if (returnVal) {
+            return returnVal;
+        }
+        return "";
     }
 }
 exports.Violations = Violations;
@@ -137,13 +160,6 @@ function run() {
             core.info(`json string received: ${jsonStr}`);
             const violations = new Violations_1.Violations();
             yield violations.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
-            // const interaction = new GitHubInteraction();
-            // interaction.queryPullRequest();
-            // core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-            // core.debug(new Date().toTimeString())
-            // await wait(parseInt(ms, 10))
-            // core.debug(new Date().toTimeString())
-            // core.setOutput('time', new Date().toTimeString())
         }
         catch (error) {
             if (error instanceof Error)
@@ -151,33 +167,6 @@ function run() {
         }
     });
 }
-// async function commentTest(): Promise<void> {
-//   const pullRequest = github.context.payload;
-//   const githubToken = core.getInput('github_token');
-//   const octokit = github.getOctokit(githubToken);
-//   // await octoKit.rest.pulls.({
-//   //   ...github.context.repo,
-//   //   pull_number: pullRequest.number,
-//   //   body: "Test data",
-//   //   path: "force-app/main/default/classes/Cat.cls",
-//   //   line: 3
-//   // });
-//   await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/comments', {
-//     owner: github.context.repo.owner,
-//     repo: github.context.repo.repo,
-//     pull_number: pullRequest.number,
-//     body: 'Testing comments',
-//     commit_id: ,
-//     path: 'force-app/main/default/classes/Cat.cls',
-//     // start_line: 1,
-//     // start_side: 'RIGHT',
-//     line: 3,
-//     // side: 'RIGHT',
-//     headers: {
-//       'X-GitHub-Api-Version': '2022-11-28'
-//     }
-//   })
-// }
 run();
 
 

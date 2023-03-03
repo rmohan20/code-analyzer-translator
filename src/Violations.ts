@@ -2,23 +2,19 @@ import { RuleResult, RuleViolation, PathlessRuleViolation, DfaRuleViolation } fr
 import * as core from '@actions/core'
 import { SummaryTableRow } from "@actions/core/lib/summary";
 
+// Mapping severities to emojis to display
+const SEVERITY_TO_EMOJI_MAP = new Map<number, string>([
+    [1, ':firecracker:'], 
+    [2, ':zap:'], 
+    [3, ':yellow_circle:'], 
+    [4, ':warning:'], 
+    [5, ':warning:']]);
+
 export class Violations {
     async summarize(jsonString: string, isDfa: boolean): Promise<void> {
         const ruleResult: RuleResult[]  = JSON.parse(jsonString);
 
-//         await core.summary
-//   .addHeading('Code Analyzer Results')
-//   .addCodeBlock(generateTestResults(), "js")
-//   .addTable([
-//     [{data: 'File', header: true}, {data: 'Result', header: true}],
-//     ['foo.js', 'Pass '],
-//     ['bar.js', 'Fail '],
-//     ['test.js', 'Pass ']
-//   ])
-//   .addLink('View staging deployment!', 'https://github.com')
-//   .write()
-
-        core.summary.addHeading("Code Analyzer Results", 1);
+        core.summary.addHeading(":mag: Code Analyzer Results", 1);
         // TODO: regroup by filename
         
         ruleResult.forEach(result => this.summarizeRuleResult(result, isDfa));
@@ -49,16 +45,42 @@ export class Violations {
     }
 
     simpleViolationHeader(): SummaryTableRow {
-        return [{data: 'Rule', header: true}, {data: 'Message', header: true}, {data: 'Line', header: true}, {data: 'Column', header: true}]
+        return [{data: 'Sev', header: true},{data: 'Rule', header: true}, {data: 'Message', header: true}, {data: 'Line', header: true}, {data: 'Column', header: true}]
     }
     summarizeSimpleViolation(simpleViolation: PathlessRuleViolation): SummaryTableRow {
-        return [`<a href="${simpleViolation.url}">${simpleViolation.ruleName}</a>`, simpleViolation.message, `${simpleViolation.line}`, `${simpleViolation.column}`]
+        return [
+            `${this.getViolationSeverity(simpleViolation.severity, simpleViolation.normalizedSeverity)}`,
+            `<a href="${simpleViolation.url}">${simpleViolation.ruleName}</a>`, 
+            simpleViolation.message, 
+            `${simpleViolation.line}`, 
+            `${simpleViolation.column}`];
     }
 
     dfaViolationHeader(): SummaryTableRow {
-        return [{data: 'Rule', header: true}, {data: 'Message', header: true}, {data: 'Sink Filename', header: true}, {data: 'Sink Line', header: true}, {data: 'Sink Column', header: true}]
+        return [{data: 'Sev', header: true}, {data: 'Rule', header: true}, {data: 'Message', header: true}, {data: 'Sink Filename', header: true}, {data: 'Sink Line', header: true}, {data: 'Sink Column', header: true}]
     }
+
+
     summarizeDfaViolation(dfaViolation: DfaRuleViolation): SummaryTableRow {
-        return [`<a href="${dfaViolation.url}">${dfaViolation.ruleName}</a>`, dfaViolation.message, `${dfaViolation.sinkFileName}`, `${dfaViolation.sinkLine}`, `${dfaViolation.sinkColumn}`]
+        return [
+            `${this.getViolationSeverity(dfaViolation.severity, dfaViolation.normalizedSeverity)}`,
+            `<a href="${dfaViolation.url}">${dfaViolation.ruleName}</a>`, 
+            dfaViolation.message, 
+            `${dfaViolation.sinkFileName}`, 
+            `${dfaViolation.sinkLine}`, 
+            `${dfaViolation.sinkColumn}`];
+    }
+
+    getViolationSeverity(severity: number, normalizedSeverity?: number): string {
+        let returnVal: string | undefined;
+        if (normalizedSeverity) {
+            returnVal = SEVERITY_TO_EMOJI_MAP.get(normalizedSeverity)
+        } else {
+            returnVal = SEVERITY_TO_EMOJI_MAP.get(severity);
+        }
+        if (returnVal) {
+            return returnVal;
+        }
+        return "";
     }
 }
