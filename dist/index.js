@@ -59,11 +59,15 @@ class Violations {
         });
     }
     summarizeRuleResult(ruleResult) {
-        core.summary.addHeading(`${ruleResult.engine}, ${ruleResult.fileName}`, 2);
+        core.summary.addHeading(`${ruleResult.engine}: ${ruleResult.fileName}`, 3);
+        const tableData = [[{ data: 'Rule', header: true }, { data: 'Message', header: true }]];
+        ruleResult.violations.forEach(violation => {
+            tableData.push(this.summarizeViolation(violation));
+        });
+        core.summary.addTable(tableData);
     }
     summarizeViolation(ruleViolation) {
-        core.summary.addRaw(`${ruleViolation.ruleName}: ${ruleViolation.message}`);
-        core.summary.addLink(ruleViolation.ruleName, `${ruleViolation.url}`);
+        return [ruleViolation.ruleName, ruleViolation.message];
     }
 }
 exports.Violations = Violations;

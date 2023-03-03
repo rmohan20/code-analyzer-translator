@@ -20,20 +20,25 @@ export class Violations {
 
         core.summary.addHeading("Code Analyzer Results", 1);
         // TODO: regroup by filename
+        
         ruleResult.forEach(result => this.summarizeRuleResult(result));
 
         await core.summary.write();
     }
 
     summarizeRuleResult(ruleResult: RuleResult): void {
-        core.summary.addHeading(`${ruleResult.engine}, ${ruleResult.fileName}`, 2);
+        core.summary.addHeading(`${ruleResult.engine}: ${ruleResult.fileName}`, 3);
+        
+        const tableData: SummaryTableRow[] = [[{data: 'Rule', header: true}, {data: 'Message', header: true}]];
         ruleResult.violations.forEach(violation => {
-            core.summary.addHeading(`${violation.ruleName}: ${violation.message}`, 3);
+            tableData.push(this.summarizeViolation(violation));
         });
+
+        core.summary.addTable(tableData);
+        
     }
 
-    summarizeViolation(ruleViolation: RuleViolation): void {
-        
-        // core.summary.addLink(ruleViolation.ruleName, `${ruleViolation.url}`);
+    summarizeViolation(ruleViolation: RuleViolation): string[] {
+        return [ruleViolation.ruleName, ruleViolation.message]
     }
 }
