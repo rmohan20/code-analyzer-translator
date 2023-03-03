@@ -52,13 +52,13 @@ export class Violations {
         return [{data: 'Rule', header: true}, {data: 'Message', header: true}, {data: 'Line', header: true}, {data: 'Column', header: true}]
     }
     summarizeSimpleViolation(simpleViolation: PathlessRuleViolation): SummaryTableRow {
-        return [`(${simpleViolation.ruleName})[${simpleViolation.url}]`, simpleViolation.message, `${simpleViolation.line}`, `${simpleViolation.column}`]
+        return [`<a href="${simpleViolation.url}">${simpleViolation.ruleName}</a>`, simpleViolation.message, `${simpleViolation.line}`, `${simpleViolation.column}`]
     }
 
     dfaViolationHeader(): SummaryTableRow {
         return [{data: 'Rule', header: true}, {data: 'Message', header: true}, {data: 'Sink Filename', header: true}, {data: 'Sink Line', header: true}, {data: 'Sink Column', header: true}]
     }
     summarizeDfaViolation(dfaViolation: DfaRuleViolation): SummaryTableRow {
-        return [`(${dfaViolation.ruleName})[${dfaViolation.url}]`, dfaViolation.message, `${dfaViolation.sinkFileName}`, `${dfaViolation.sinkLine}`, `${dfaViolation.sinkColumn}`]
+        return [`<a href="${dfaViolation.url}">${dfaViolation.ruleName}</a>`, dfaViolation.message, `${dfaViolation.sinkFileName}`, `${dfaViolation.sinkLine}`, `${dfaViolation.sinkColumn}`]
     }
 }
