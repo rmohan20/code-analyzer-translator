@@ -49,11 +49,17 @@ const SEVERITY_TO_EMOJI_MAP = new Map([
 class MarkdownCreator {
     summarize(jsonString, isDfa) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (jsonString === "" || !jsonString) {
-                this.successfulRun();
+            try {
+                if (jsonString === "" || !jsonString) {
+                    this.successfulRun();
+                }
+                else if (jsonString) {
+                    this.summarizeResults(jsonString, isDfa);
+                }
             }
-            else {
-                this.summarizeResults(jsonString, isDfa);
+            catch (error) {
+                core.summary.addHeading(":no_entry_sign: Code Analyzer");
+                core.summary.addRaw(`:warning: Encountered error while processing. You can find more information in the console logs.`);
             }
             yield core.summary.write();
         });
