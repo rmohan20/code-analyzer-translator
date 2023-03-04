@@ -1,7 +1,7 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 549:
+/***/ 654:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -35,8 +35,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Violations = void 0;
+exports.MarkdownCreator = void 0;
 const core = __importStar(__nccwpck_require__(186));
+const ViolationsHandler_1 = __nccwpck_require__(441);
 // Mapping severities to emojis to display
 const SEVERITY_TO_EMOJI_MAP = new Map([
     [1, ':firecracker:'],
@@ -45,39 +46,81 @@ const SEVERITY_TO_EMOJI_MAP = new Map([
     [4, ':warning:'],
     [5, ':warning:']
 ]);
-class Violations {
+class MarkdownCreator {
     summarize(jsonString, isDfa) {
         return __awaiter(this, void 0, void 0, function* () {
-            const ruleResult = JSON.parse(jsonString);
-            core.summary.addHeading(":mag: Code Analyzer Results", 1);
-            // TODO: regroup by filename
-            ruleResult.forEach(result => this.summarizeRuleResult(result, isDfa));
+            if (jsonString === "" || !jsonString) {
+                this.successfulRun();
+            }
+            else {
+                this.summarizeResults(jsonString, isDfa);
+            }
             yield core.summary.write();
         });
     }
-    summarizeRuleResult(ruleResult, isDfa) {
-        core.summary.addHeading(`${ruleResult.engine}: ${ruleResult.fileName}`, 3);
-        const tableData = [];
+    successfulRun() {
+        core.summary.addHeading(":rocket: Code Analyzer");
+        core.summary.addRaw(`:tada: No rule violations found.`);
+    }
+    summarizeResults(jsonString, isDfa) {
+        core.summary.addHeading(":mag: Code Analyzer Results", 1);
+        const handler = new ViolationsHandler_1.ViolationsHandler();
         if (isDfa) {
-            tableData.push(this.dfaViolationHeader());
-            ruleResult.violations.forEach(violation => {
-                tableData.push(this.summarizeDfaViolation(violation));
-            });
+            const dfaResults = handler.parseDfa(jsonString);
+            this.summarizeDfaResults(dfaResults);
         }
         else {
-            tableData.push(this.simpleViolationHeader());
-            ruleResult.violations.forEach(violation => {
-                tableData.push(this.summarizeSimpleViolation(violation));
-            });
+            const simpleResults = handler.parseSimple(jsonString);
+            this.summarizeSimpleResults(simpleResults);
         }
-        core.summary.addTable(tableData);
+    }
+    addFileNameHeader(fileName) {
+        core.summary.addHeading(`:arrow_right: ${fileName}`, 3);
+    }
+    summarizeSimpleResults(simpleResults) {
+        for (const file of simpleResults.keys()) {
+            const simpleViolations = simpleResults.get(file);
+            if (!simpleViolations) {
+                // Don't add anything if violations list is empty
+                continue;
+            }
+            this.addFileNameHeader(file);
+            const tableData = [];
+            tableData.push(this.simpleViolationHeader());
+            for (const v of simpleViolations) {
+                tableData.push(this.summarizeSimpleViolation(v));
+            }
+            core.summary.addTable(tableData);
+        }
+    }
+    summarizeDfaResults(dfaResults) {
+        for (const file of dfaResults.keys()) {
+            const dfaViolations = dfaResults.get(file);
+            if (!dfaViolations) {
+                // Don't add anything if violations list is empty
+                continue;
+            }
+            this.addFileNameHeader(file);
+            const tableData = [];
+            tableData.push(this.dfaViolationHeader());
+            for (const v of dfaViolations) {
+                tableData.push(this.summarizeDfaViolation(v));
+            }
+            core.summary.addTable(tableData);
+        }
     }
     simpleViolationHeader() {
-        return [{ data: 'Sev', header: true }, { data: 'Rule', header: true }, { data: 'Message', header: true }, { data: 'Line', header: true }, { data: 'Column', header: true }];
+        return [
+            { data: 'Sev', header: true },
+            { data: 'Rule', header: true },
+            { data: 'Message', header: true },
+            { data: 'Line', header: true },
+            { data: 'Column', header: true }
+        ];
     }
     summarizeSimpleViolation(simpleViolation) {
         return [
-            `${this.getViolationSeverity(simpleViolation.severity, simpleViolation.normalizedSeverity)}`,
+            `${this.getViolationSeverity(simpleViolation.severity)}`,
             `<a href="${simpleViolation.url}">${simpleViolation.ruleName}</a>`,
             simpleViolation.message,
             `${simpleViolation.line}`,
@@ -85,11 +128,18 @@ class Violations {
         ];
     }
     dfaViolationHeader() {
-        return [{ data: 'Sev', header: true }, { data: 'Rule', header: true }, { data: 'Message', header: true }, { data: 'Sink Filename', header: true }, { data: 'Sink Line', header: true }, { data: 'Sink Column', header: true }];
+        return [
+            { data: 'Sev', header: true },
+            { data: 'Rule', header: true },
+            { data: 'Message', header: true },
+            { data: 'Sink Filename', header: true },
+            { data: 'Sink Line', header: true },
+            { data: 'Sink Column', header: true }
+        ];
     }
     summarizeDfaViolation(dfaViolation) {
         return [
-            `${this.getViolationSeverity(dfaViolation.severity, dfaViolation.normalizedSeverity)}`,
+            `${this.getViolationSeverity(dfaViolation.severity)}`,
             `<a href="${dfaViolation.url}">${dfaViolation.ruleName}</a>`,
             dfaViolation.message,
             `${dfaViolation.sinkFileName}`,
@@ -97,21 +147,94 @@ class Violations {
             `${dfaViolation.sinkColumn}`
         ];
     }
-    getViolationSeverity(severity, normalizedSeverity) {
-        let returnVal;
-        if (normalizedSeverity) {
-            returnVal = SEVERITY_TO_EMOJI_MAP.get(normalizedSeverity);
-        }
-        else {
-            returnVal = SEVERITY_TO_EMOJI_MAP.get(severity);
-        }
+    getViolationSeverity(severity) {
+        const returnVal = SEVERITY_TO_EMOJI_MAP.get(severity);
         if (returnVal) {
             return returnVal;
         }
         return "";
     }
 }
-exports.Violations = Violations;
+exports.MarkdownCreator = MarkdownCreator;
+
+
+/***/ }),
+
+/***/ 441:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ViolationsHandler = void 0;
+class ViolationsHandler {
+    parseDfa(jsonString) {
+        const results = JSON.parse(jsonString);
+        const violations = [];
+        for (const result of results) {
+            for (const violation of result.violations) {
+                const dv = violation;
+                const formattedViolation = {
+                    engine: result.engine,
+                    fileName: result.fileName,
+                    ruleName: dv.ruleName,
+                    message: dv.message,
+                    severity: dv.normalizedSeverity ? dv.normalizedSeverity : dv.severity,
+                    category: dv.category,
+                    url: dv.url ? dv.url : '',
+                    sourceLine: dv.sourceLine,
+                    sourceColumn: dv.sourceColumn,
+                    sourceMethodName: dv.sourceMethodName,
+                    sinkFileName: dv.sinkFileName,
+                    sinkLine: dv.sinkLine,
+                    sinkColumn: dv.sinkColumn
+                };
+                violations.push(formattedViolation);
+            }
+        }
+        const dfaMap = groupBy(violations, v => v.fileName);
+        return dfaMap;
+    }
+    parseSimple(jsonString) {
+        const results = JSON.parse(jsonString);
+        const violations = [];
+        for (const result of results) {
+            for (const violation of result.violations) {
+                const sv = violation;
+                const formattedViolation = {
+                    engine: result.engine,
+                    fileName: result.fileName,
+                    ruleName: sv.ruleName,
+                    message: sv.message,
+                    severity: sv.normalizedSeverity ? sv.normalizedSeverity : sv.severity,
+                    category: sv.category,
+                    url: sv.url ? sv.url : '',
+                    line: sv.line,
+                    column: sv.column
+                };
+                violations.push(formattedViolation);
+            }
+        }
+        const simpleMap = groupBy(violations, v => v.fileName);
+        return simpleMap;
+    }
+}
+exports.ViolationsHandler = ViolationsHandler;
+function groupBy(array, grouper) {
+    return array.reduce((store, item) => {
+        var key = grouper(item);
+        if (!store.has(key)) {
+            store.set(key, [item]);
+        }
+        else {
+            const val = store.get(key);
+            if (val) {
+                val.push(item);
+            }
+        }
+        return store;
+    }, new Map());
+}
 
 
 /***/ }),
@@ -151,15 +274,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const Violations_1 = __nccwpck_require__(549);
+const MarkdownCreator_1 = __nccwpck_require__(654);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const jsonStr = core.getInput('jsonstring');
             const runtype = core.getInput('runtype');
             core.info(`json string received: ${jsonStr}`);
-            const violations = new Violations_1.Violations();
-            yield violations.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
+            const mdCreator = new MarkdownCreator_1.MarkdownCreator();
+            yield mdCreator.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
         }
         catch (error) {
             if (error instanceof Error)

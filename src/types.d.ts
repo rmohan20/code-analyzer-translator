@@ -33,3 +33,30 @@ export type RuleResult = {
 	violations: RuleViolation[];
 };
 
+export type FlatSimpleViolation = {
+	engine: string;
+	fileName: string;
+	ruleName: string;
+	message: string;
+	severity: number;
+	category: string;
+	url?: string;
+	line: number;
+	column: number;
+}
+
+export type FlatDfaViolation = {
+	engine: string;
+	fileName: string;
+	ruleName: string;
+	message: string;
+	severity: number;
+	category: string;
+	url: string;
+	sourceLine: number;
+	sourceColumn: number;
+	sourceMethodName: string;
+	sinkFileName: string|null;
+	sinkLine: number|null;
+	sinkColumn: number|null;
+}

@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import { Violations } from './Violations';
+import { MarkdownCreator } from './MarkdownCreator';
 
 async function run(): Promise<void> {
   try {
@@ -8,8 +8,8 @@ async function run(): Promise<void> {
 
     core.info(`json string received: ${jsonStr}`);
 
-    const violations = new Violations();
-    await violations.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
+    const mdCreator = new MarkdownCreator();
+    await mdCreator.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
 
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
