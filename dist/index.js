@@ -58,8 +58,7 @@ class MarkdownCreator {
                 }
             }
             catch (error) {
-                core.summary.addHeading(":no_entry_sign: Code Analyzer");
-                core.summary.addRaw(`:warning: Encountered error while processing. You can find more information in the console logs.`);
+                core.summary.addRaw(`:no_entry_sign: Encountered error while processing. You can find more information in the console logs.`);
             }
             yield core.summary.write();
         });
