@@ -2,9 +2,6 @@ name: 'Code Analyzer PR Buddy'
 description: 'Converts SFCA JSON outfile into comments on PR'
 author: 'Roopa Mohan'
 inputs:
-  github_token:
-    required: true
-    description: secret to use
   jsonstring:
     required: true
     description: 'JSON output from SFCA generated using --outfile or --format json'
