@@ -14,10 +14,15 @@ const SEVERITY_TO_EMOJI_MAP = new Map<number, string>([
 export class MarkdownCreator {
 
     async summarize(jsonString: string, isDfa: boolean): Promise<void> {
-        if (jsonString === "" || !jsonString) {
-            this.successfulRun();
-        } else {
-            this.summarizeResults(jsonString, isDfa);
+        try {
+            if (jsonString === "" || !jsonString) {
+                this.successfulRun();
+            } else if (jsonString) {
+                this.summarizeResults(jsonString, isDfa);
+            }
+        } catch (error) {
+            core.summary.addHeading(":no_entry_sign: Code Analyzer");
+            core.summary.addRaw(`:warning: Encountered error while processing. You can find more information in the console logs.`)
         }
         
         await core.summary.write();
