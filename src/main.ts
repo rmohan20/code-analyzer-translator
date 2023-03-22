@@ -1,16 +1,16 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import { MarkdownCreator } from './MarkdownCreator';
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const jsonStr: string = core.getInput('jsonstring');
+    const runtype: string = core.getInput('runtype');
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    core.info(`json string received: ${jsonStr}`);
 
-    core.setOutput('time', new Date().toTimeString())
+    const mdCreator = new MarkdownCreator();
+    await mdCreator.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
+
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

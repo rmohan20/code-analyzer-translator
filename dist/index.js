@@ -1,6 +1,249 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 654:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.MarkdownCreator = void 0;
+const core = __importStar(__nccwpck_require__(186));
+const ViolationsHandler_1 = __nccwpck_require__(441);
+// Mapping severities to emojis to display
+const SEVERITY_TO_EMOJI_MAP = new Map([
+    [1, ':firecracker:'],
+    [2, ':zap:'],
+    [3, ':yellow_circle:'],
+    [4, ':warning:'],
+    [5, ':warning:']
+]);
+class MarkdownCreator {
+    summarize(jsonString, isDfa) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (jsonString === "" || !jsonString) {
+                    this.successfulRun();
+                }
+                else if (jsonString) {
+                    this.summarizeResults(jsonString, isDfa);
+                }
+            }
+            catch (error) {
+                core.summary.addRaw(`:no_entry_sign: Encountered error while processing. You can find more information in the console logs.`);
+            }
+            yield core.summary.write();
+        });
+    }
+    successfulRun() {
+        core.summary.addHeading(":rocket: Code Analyzer");
+        core.summary.addRaw(`:tada: No rule violations found.`);
+    }
+    summarizeResults(jsonString, isDfa) {
+        core.summary.addHeading(":mag: Code Analyzer Results", 1);
+        const handler = new ViolationsHandler_1.ViolationsHandler();
+        if (isDfa) {
+            const dfaResults = handler.parseDfa(jsonString);
+            this.summarizeDfaResults(dfaResults);
+        }
+        else {
+            const simpleResults = handler.parseSimple(jsonString);
+            this.summarizeSimpleResults(simpleResults);
+        }
+    }
+    addFileNameHeader(fileName) {
+        core.summary.addHeading(`:arrow_right: ${fileName}`, 3);
+    }
+    summarizeSimpleResults(simpleResults) {
+        for (const file of simpleResults.keys()) {
+            const simpleViolations = simpleResults.get(file);
+            if (!simpleViolations) {
+                // Don't add anything if violations list is empty
+                continue;
+            }
+            this.addFileNameHeader(file);
+            const tableData = [];
+            tableData.push(this.simpleViolationHeader());
+            for (const v of simpleViolations) {
+                tableData.push(this.summarizeSimpleViolation(v));
+            }
+            core.summary.addTable(tableData);
+        }
+    }
+    summarizeDfaResults(dfaResults) {
+        for (const file of dfaResults.keys()) {
+            const dfaViolations = dfaResults.get(file);
+            if (!dfaViolations) {
+                // Don't add anything if violations list is empty
+                continue;
+            }
+            this.addFileNameHeader(file);
+            const tableData = [];
+            tableData.push(this.dfaViolationHeader());
+            for (const v of dfaViolations) {
+                tableData.push(this.summarizeDfaViolation(v));
+            }
+            core.summary.addTable(tableData);
+        }
+    }
+    simpleViolationHeader() {
+        return [
+            { data: 'Sev', header: true },
+            { data: 'Rule', header: true },
+            { data: 'Message', header: true },
+            { data: 'Line', header: true },
+            { data: 'Column', header: true }
+        ];
+    }
+    summarizeSimpleViolation(simpleViolation) {
+        return [
+            `${this.getViolationSeverity(simpleViolation.severity)}`,
+            `<a href="${simpleViolation.url}">${simpleViolation.ruleName}</a>`,
+            simpleViolation.message,
+            `${simpleViolation.line}`,
+            `${simpleViolation.column}`
+        ];
+    }
+    dfaViolationHeader() {
+        return [
+            { data: 'Sev', header: true },
+            { data: 'Rule', header: true },
+            { data: 'Message', header: true },
+            { data: 'Sink Filename', header: true },
+            { data: 'Sink Line', header: true },
+            { data: 'Sink Column', header: true }
+        ];
+    }
+    summarizeDfaViolation(dfaViolation) {
+        return [
+            `${this.getViolationSeverity(dfaViolation.severity)}`,
+            `<a href="${dfaViolation.url}">${dfaViolation.ruleName}</a>`,
+            dfaViolation.message,
+            `${dfaViolation.sinkFileName}`,
+            `${dfaViolation.sinkLine}`,
+            `${dfaViolation.sinkColumn}`
+        ];
+    }
+    getViolationSeverity(severity) {
+        const returnVal = SEVERITY_TO_EMOJI_MAP.get(severity);
+        if (returnVal) {
+            return returnVal;
+        }
+        return "";
+    }
+}
+exports.MarkdownCreator = MarkdownCreator;
+
+
+/***/ }),
+
+/***/ 441:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ViolationsHandler = void 0;
+class ViolationsHandler {
+    parseDfa(jsonString) {
+        const results = JSON.parse(jsonString);
+        const violations = [];
+        for (const result of results) {
+            for (const violation of result.violations) {
+                const dv = violation;
+                const formattedViolation = {
+                    engine: result.engine,
+                    fileName: result.fileName,
+                    ruleName: dv.ruleName,
+                    message: dv.message,
+                    severity: dv.normalizedSeverity ? dv.normalizedSeverity : dv.severity,
+                    category: dv.category,
+                    url: dv.url ? dv.url : '',
+                    sourceLine: dv.sourceLine,
+                    sourceColumn: dv.sourceColumn,
+                    sourceMethodName: dv.sourceMethodName,
+                    sinkFileName: dv.sinkFileName,
+                    sinkLine: dv.sinkLine,
+                    sinkColumn: dv.sinkColumn
+                };
+                violations.push(formattedViolation);
+            }
+        }
+        const dfaMap = groupBy(violations, v => v.fileName);
+        return dfaMap;
+    }
+    parseSimple(jsonString) {
+        const results = JSON.parse(jsonString);
+        const violations = [];
+        for (const result of results) {
+            for (const violation of result.violations) {
+                const sv = violation;
+                const formattedViolation = {
+                    engine: result.engine,
+                    fileName: result.fileName,
+                    ruleName: sv.ruleName,
+                    message: sv.message,
+                    severity: sv.normalizedSeverity ? sv.normalizedSeverity : sv.severity,
+                    category: sv.category,
+                    url: sv.url ? sv.url : '',
+                    line: sv.line,
+                    column: sv.column
+                };
+                violations.push(formattedViolation);
+            }
+        }
+        const simpleMap = groupBy(violations, v => v.fileName);
+        return simpleMap;
+    }
+}
+exports.ViolationsHandler = ViolationsHandler;
+function groupBy(array, grouper) {
+    return array.reduce((store, item) => {
+        var key = grouper(item);
+        if (!store.has(key)) {
+            store.set(key, [item]);
+        }
+        else {
+            const val = store.get(key);
+            if (val) {
+                val.push(item);
+            }
+        }
+        return store;
+    }, new Map());
+}
+
+
+/***/ }),
+
 /***/ 109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -36,16 +279,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const wait_1 = __nccwpck_require__(817);
+const MarkdownCreator_1 = __nccwpck_require__(654);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ms = core.getInput('milliseconds');
-            core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-            core.debug(new Date().toTimeString());
-            yield (0, wait_1.wait)(parseInt(ms, 10));
-            core.debug(new Date().toTimeString());
-            core.setOutput('time', new Date().toTimeString());
+            const jsonStr = core.getInput('jsonstring');
+            const runtype = core.getInput('runtype');
+            core.info(`json string received: ${jsonStr}`);
+            const mdCreator = new MarkdownCreator_1.MarkdownCreator();
+            yield mdCreator.summarize(jsonStr, runtype.toLocaleLowerCase() === 'dfa');
         }
         catch (error) {
             if (error instanceof Error)
@@ -54,37 +296,6 @@ function run() {
     });
 }
 run();
-
-
-/***/ }),
-
-/***/ 817:
-/***/ (function(__unused_webpack_module, exports) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = void 0;
-function wait(milliseconds) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            if (isNaN(milliseconds)) {
-                throw new Error('milliseconds not a number');
-            }
-            setTimeout(() => resolve('done!'), milliseconds);
-        });
-    });
-}
-exports.wait = wait;
 
 
 /***/ }),

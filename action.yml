@@ -1,11 +1,24 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Code Analyzer PR Buddy'
+description: 'Converts SFCA JSON outfile into comments on PR'
+author: 'Roopa Mohan'
 inputs:
-  milliseconds: # change this
+  jsonstring:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'JSON output from SFCA generated using --outfile or --format json'
+  runtype:
+    required: true
+    description: '"dfa" if results are associated with a DFA run, "simple" otherwise.'
+  # skiprules:
+  #   required: false
+  #   description: 'Rules you want to skip from results. Provide array of rule names.'
+  #   default: []
+  # skipcategories:
+  #   required: false
+  #   description: 'Categories you want to skip from results. Provide array of category names.'
+  #   default: []
+  # minseverity:
+  #   required: false
+  #   description: 'Lowest severity you want to see in the results. Provide normalized severity number. Make sure your results are normalized.'
 runs:
   using: 'node16'
   main: 'dist/index.js'
