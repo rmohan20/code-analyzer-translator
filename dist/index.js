@@ -74,7 +74,10 @@ class FileHandler {
     downloadArtifact(artifactName, path) {
         return __awaiter(this, void 0, void 0, function* () {
             const artifactClient = artifact.create();
-            const downloadResponse = yield artifactClient.downloadArtifact(artifactName, path);
+            const options = {
+                createArtifactFolder: false
+            };
+            const downloadResponse = yield artifactClient.downloadArtifact(artifactName, path, options);
             return downloadResponse.downloadPath;
         });
     }

@@ -32,7 +32,10 @@ export class FileHandler {
      */
     private async downloadArtifact(artifactName: string, path?: string): Promise<string> {
         const artifactClient = artifact.create();
-        const downloadResponse = await artifactClient.downloadArtifact(artifactName);
+        const options = {
+            createArtifactFolder: false
+        }
+        const downloadResponse = await artifactClient.downloadArtifact(artifactName, path, options);
         return downloadResponse.downloadPath;
     }
 }
