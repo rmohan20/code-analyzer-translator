@@ -13,7 +13,7 @@ export class FileHandler {
      * @param filePath Optional value if the file was stored in a specific path
      * @returns String contained in outfile
      */
-    public async downloadOutfile(outfileName: string, filePath?: string): Promise<string> {
+    public async downloadOutfile(outfileName: string, filePath: string): Promise<string> {
         const fileName = await this.downloadArtifact(outfileName, filePath);
         const execOutput = await exec.getExecOutput(`cat ${fileName}`);
         if (execOutput.stderr) {
@@ -31,13 +31,13 @@ export class FileHandler {
      * @param filePath Used during upload step
      * @returns full file name of downloaded file
      */
-    private async downloadArtifact(artifactName: string, filePath?: string): Promise<string> {
+    private async downloadArtifact(artifactName: string, filePath: string): Promise<string> {
         const artifactClient = artifact.create();
         // const options = {
         //     rootDownloadLocation: "~/."
         // }
         const downloadResponse = await artifactClient.downloadArtifact(artifactName);
-        const artifactFile =  path.join(downloadResponse.downloadPath, downloadResponse.artifactName)
+        const artifactFile =  path.join(downloadResponse.downloadPath, filePath)
         return artifactFile;
     }
 }

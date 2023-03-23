@@ -79,7 +79,7 @@ class FileHandler {
             //     rootDownloadLocation: "~/."
             // }
             const downloadResponse = yield artifactClient.downloadArtifact(artifactName);
-            const artifactFile = path.join(downloadResponse.downloadPath, downloadResponse.artifactName);
+            const artifactFile = path.join(downloadResponse.downloadPath, filePath);
             return artifactFile;
         });
     }
