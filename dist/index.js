@@ -43,6 +43,7 @@ exports.FileHandler = void 0;
 const artifact = __importStar(__nccwpck_require__(2605));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
+const path = __importStar(__nccwpck_require__(1017));
 /**
  * Handles file read/write operations.
  */
@@ -50,12 +51,12 @@ class FileHandler {
     /**
      * Downloads output file of Code Analyzer execution
      * @param outfileName Artifact name used to originally upload outfile
-     * @param path Optional value if the file was stored in a specific path
+     * @param filePath Optional value if the file was stored in a specific path
      * @returns String contained in outfile
      */
-    downloadOutfile(outfileName, path) {
+    downloadOutfile(outfileName, filePath) {
         return __awaiter(this, void 0, void 0, function* () {
-            const fileName = yield this.downloadArtifact(outfileName, path);
+            const fileName = yield this.downloadArtifact(outfileName, filePath);
             const execOutput = yield exec.getExecOutput(`cat ${fileName}`);
             if (execOutput.stderr) {
                 core.error(`Error while reading file: ${execOutput.stderr}`);
@@ -68,17 +69,18 @@ class FileHandler {
     /**
      * Invokes GitHub download-artifact action
      * @param artifactName Used during upload step
-     * @param path Used during upload step
+     * @param filePath Used during upload step
      * @returns full file name of downloaded file
      */
-    downloadArtifact(artifactName, path) {
+    downloadArtifact(artifactName, filePath) {
         return __awaiter(this, void 0, void 0, function* () {
             const artifactClient = artifact.create();
             // const options = {
             //     rootDownloadLocation: "~/."
             // }
             const downloadResponse = yield artifactClient.downloadArtifact(artifactName);
-            return downloadResponse.downloadPath;
+            const artifactFile = path.join(downloadResponse.downloadPath, downloadResponse.artifactName);
+            return artifactFile;
         });
     }
 }
