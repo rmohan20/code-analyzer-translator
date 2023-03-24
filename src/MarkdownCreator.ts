@@ -15,11 +15,12 @@ export class MarkdownCreator {
 
     async checkActionNeeded(codeAnalyzerExitCode?: string) {
         // Continue only if exit code was provided. Else we'll figure out later.
-        core.info(`codeAnalyzerExitCode = ${codeAnalyzerExitCode}`);
+        core.debug(`codeAnalyzerExitCode = ${codeAnalyzerExitCode}`);
         if (codeAnalyzerExitCode) {
             const exitCodeNum: number = parseInt(codeAnalyzerExitCode);
-            core.info(`exitCodeNum = ${exitCodeNum}`);
-            if (exitCodeNum == 0) {
+            core.debug(`exitCodeNum = ${exitCodeNum}`);
+            if (exitCodeNum === 0) {
+                core.debug(`Received exit code 0`);
                 this.successfulRun();
             } else if (exitCodeNum >= 5) {
                 core.summary.addRaw(":no_entry_sign: Code Analyzer step failed. See logs for more information.");
