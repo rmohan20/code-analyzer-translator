@@ -13,18 +13,51 @@ const SEVERITY_TO_EMOJI_MAP = new Map<number, string>([
 
 export class MarkdownCreator {
 
+    async checkActionNeeded(codeAnalyzerExitCode?: string): Promise<boolean> {
+        // Continue only if exit code was provided. Else we'll figure out later.
+        core.debug(`codeAnalyzerExitCode = ${codeAnalyzerExitCode}`);
+        let isActionNeeded = true;
+        if (codeAnalyzerExitCode) {
+            const exitCodeNum: number = parseInt(codeAnalyzerExitCode);
+            core.debug(`exitCodeNum = ${exitCodeNum}`);
+            if (exitCodeNum === 0) {
+                core.debug(`Received exit code 0`);
+                this.successfulRun();
+                isActionNeeded = false;
+            } else if (exitCodeNum >= 5) {
+                core.summary.addRaw(":no_entry_sign: Code Analyzer step failed. See logs for more information.");
+                isActionNeeded = false;
+            }
+
+            if (!isActionNeeded) {
+                await core.summary.write();
+            }
+        }
+
+        return isActionNeeded;
+    }
+
     async summarize(jsonString: string, isDfa: boolean): Promise<void> {
         try {
-            if (jsonString === "" || !jsonString) {
-                this.successfulRun();
-            } else if (jsonString) {
-                this.summarizeResults(jsonString, isDfa);
+            // Don't process further if result file is empty
+            if (!jsonString) {
+                throw new Error("No results found.")
             }
+
+            this.summarizeResults(jsonString, isDfa);
+
         } catch (error) {
-            core.summary.addRaw(`:no_entry_sign: Encountered error while processing. You can find more information in the console logs.`)
+            // Print error message in MD if valid error message is available
+            if (error instanceof Error) {
+                core.summary.addRaw(`:no_entry_sign: Encountered error while processing: ${error}`);
+            }
+
+            // Rethrow to fail the step
+            throw error;
+        } finally {
+            await core.summary.write();
         }
         
-        await core.summary.write();
     }
 
     private successfulRun(): void {
