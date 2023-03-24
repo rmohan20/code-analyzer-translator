@@ -13,21 +13,28 @@ const SEVERITY_TO_EMOJI_MAP = new Map<number, string>([
 
 export class MarkdownCreator {
 
-    async checkActionNeeded(codeAnalyzerExitCode?: string) {
+    async checkActionNeeded(codeAnalyzerExitCode?: string): Promise<boolean> {
         // Continue only if exit code was provided. Else we'll figure out later.
         core.debug(`codeAnalyzerExitCode = ${codeAnalyzerExitCode}`);
+        let isActionNeeded = true;
         if (codeAnalyzerExitCode) {
             const exitCodeNum: number = parseInt(codeAnalyzerExitCode);
             core.debug(`exitCodeNum = ${exitCodeNum}`);
             if (exitCodeNum === 0) {
                 core.debug(`Received exit code 0`);
                 this.successfulRun();
+                isActionNeeded = false;
             } else if (exitCodeNum >= 5) {
                 core.summary.addRaw(":no_entry_sign: Code Analyzer step failed. See logs for more information.");
-            } else {
-                core.info(`Valid exit code found for Code Analyzer: ${exitCodeNum}`);
+                isActionNeeded = false;
+            }
+
+            if (!isActionNeeded) {
+                await core.summary.write();
             }
         }
+
+        return isActionNeeded;
     }
 
     async summarize(jsonString: string, isDfa: boolean): Promise<void> {

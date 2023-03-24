@@ -143,20 +143,24 @@ class MarkdownCreator {
         return __awaiter(this, void 0, void 0, function* () {
             // Continue only if exit code was provided. Else we'll figure out later.
             core.debug(`codeAnalyzerExitCode = ${codeAnalyzerExitCode}`);
+            let isActionNeeded = true;
             if (codeAnalyzerExitCode) {
                 const exitCodeNum = parseInt(codeAnalyzerExitCode);
                 core.debug(`exitCodeNum = ${exitCodeNum}`);
                 if (exitCodeNum === 0) {
                     core.debug(`Received exit code 0`);
                     this.successfulRun();
+                    isActionNeeded = false;
                 }
                 else if (exitCodeNum >= 5) {
                     core.summary.addRaw(":no_entry_sign: Code Analyzer step failed. See logs for more information.");
+                    isActionNeeded = false;
                 }
-                else {
-                    core.info(`Valid exit code found for Code Analyzer: ${exitCodeNum}`);
+                if (!isActionNeeded) {
+                    yield core.summary.write();
                 }
             }
+            return isActionNeeded;
         });
     }
     summarize(jsonString, isDfa) {
@@ -412,14 +416,16 @@ function run() {
             const codeAnalyzerExitCode = core.getInput('code-analyzer-exit-code');
             const runtype = core.getInput('runtype');
             const mdCreator = new MarkdownCreator_1.MarkdownCreator();
-            mdCreator.checkActionNeeded(codeAnalyzerExitCode);
-            // Download outfile and get JSON string
-            const fileHandler = new FileHandler_1.FileHandler();
-            const jsonStr = yield fileHandler.downloadOutfile(outfileArtifactName, outfileArtifactPath);
-            // Generate markdown
-            const isDfa = runtype.toLocaleLowerCase() === 'dfa';
-            yield mdCreator.summarize(jsonStr, isDfa);
-            core.info("Finished rendering markdown output.");
+            const isActionNeeded = yield mdCreator.checkActionNeeded(codeAnalyzerExitCode);
+            if (isActionNeeded) {
+                // Download outfile and get JSON string
+                const fileHandler = new FileHandler_1.FileHandler();
+                const jsonStr = yield fileHandler.downloadOutfile(outfileArtifactName, outfileArtifactPath);
+                // Generate markdown
+                const isDfa = runtype.toLocaleLowerCase() === 'dfa';
+                yield mdCreator.summarize(jsonStr, isDfa);
+                core.info("Finished rendering markdown output.");
+            }
         }
         catch (error) {
             if (error instanceof Error)
