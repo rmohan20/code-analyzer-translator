@@ -142,8 +142,10 @@ class MarkdownCreator {
     checkActionNeeded(codeAnalyzerExitCode) {
         return __awaiter(this, void 0, void 0, function* () {
             // Continue only if exit code was provided. Else we'll figure out later.
+            core.info(`codeAnalyzerExitCode = ${codeAnalyzerExitCode}`);
             if (codeAnalyzerExitCode) {
                 const exitCodeNum = parseInt(codeAnalyzerExitCode);
+                core.info(`exitCodeNum = ${exitCodeNum}`);
                 if (exitCodeNum === 0) {
                     this.successfulRun();
                 }
@@ -406,7 +408,7 @@ function run() {
             // Get all input values
             const outfileArtifactName = core.getInput('outfile-artifact-name');
             const outfileArtifactPath = core.getInput('outfile-artifact-path');
-            const codeAnalyzerExitCode = core.getInput('code-analyzer-exit-code', { required: false });
+            const codeAnalyzerExitCode = core.getInput('code-analyzer-exit-code');
             const runtype = core.getInput('runtype');
             const mdCreator = new MarkdownCreator_1.MarkdownCreator();
             mdCreator.checkActionNeeded(codeAnalyzerExitCode);

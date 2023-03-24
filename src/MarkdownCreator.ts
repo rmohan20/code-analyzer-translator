@@ -15,8 +15,10 @@ export class MarkdownCreator {
 
     async checkActionNeeded(codeAnalyzerExitCode?: string) {
         // Continue only if exit code was provided. Else we'll figure out later.
+        core.info(`codeAnalyzerExitCode = ${codeAnalyzerExitCode}`);
         if (codeAnalyzerExitCode) {
-            const exitCodeNum = parseInt(codeAnalyzerExitCode);
+            const exitCodeNum: number = parseInt(codeAnalyzerExitCode);
+            core.info(`exitCodeNum = ${exitCodeNum}`);
             if (exitCodeNum === 0) {
                 this.successfulRun();
             } else if (exitCodeNum >= 5) {

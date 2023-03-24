@@ -7,7 +7,7 @@ async function run(): Promise<void> {
     // Get all input values
     const outfileArtifactName: string = core.getInput('outfile-artifact-name');
     const outfileArtifactPath: string = core.getInput('outfile-artifact-path');
-    const codeAnalyzerExitCode: string = core.getInput('code-analyzer-exit-code', {required: false});
+    const codeAnalyzerExitCode: string = core.getInput('code-analyzer-exit-code');
     const runtype: string = core.getInput('runtype');
 
     const mdCreator = new MarkdownCreator();
