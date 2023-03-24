@@ -146,7 +146,7 @@ class MarkdownCreator {
             if (codeAnalyzerExitCode) {
                 const exitCodeNum = parseInt(codeAnalyzerExitCode);
                 core.info(`exitCodeNum = ${exitCodeNum}`);
-                if (exitCodeNum === 0) {
+                if (exitCodeNum == 0) {
                     this.successfulRun();
                 }
                 else if (exitCodeNum >= 5) {

@@ -19,7 +19,7 @@ export class MarkdownCreator {
         if (codeAnalyzerExitCode) {
             const exitCodeNum: number = parseInt(codeAnalyzerExitCode);
             core.info(`exitCodeNum = ${exitCodeNum}`);
-            if (exitCodeNum === 0) {
+            if (exitCodeNum == 0) {
                 this.successfulRun();
             } else if (exitCodeNum >= 5) {
                 core.summary.addRaw(":no_entry_sign: Code Analyzer step failed. See logs for more information.");
