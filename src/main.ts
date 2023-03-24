@@ -7,18 +7,19 @@ async function run(): Promise<void> {
     // Get all input values
     const outfileArtifactName: string = core.getInput('outfile-artifact-name');
     const outfileArtifactPath: string = core.getInput('outfile-artifact-path');
-    const codeAnalyzerExitCode: string = core.getInput('code-analyzer-exit-code');
+    const codeAnalyzerExitCode: string = core.getInput('code-analyzer-exit-code', {required: false});
     const runtype: string = core.getInput('runtype');
+
+    const mdCreator = new MarkdownCreator();
+    mdCreator.checkActionNeeded(codeAnalyzerExitCode);
 
     // Download outfile and get JSON string
     const fileHandler = new FileHandler();
     const jsonStr = await fileHandler.downloadOutfile(outfileArtifactName, outfileArtifactPath);
 
     // Generate markdown
-    const mdCreator = new MarkdownCreator();
     const isDfa = runtype.toLocaleLowerCase() === 'dfa';
-    const exitCodeNum: number | undefined = (codeAnalyzerExitCode == undefined)? undefined : parseInt(codeAnalyzerExitCode);
-    await mdCreator.summarize(jsonStr, isDfa, exitCodeNum);
+    await mdCreator.summarize(jsonStr, isDfa);
 
     core.info("Finished rendering markdown output.");
   } catch (error) {

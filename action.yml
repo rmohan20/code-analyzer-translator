@@ -11,7 +11,7 @@ inputs:
     description: "Artifact name used while uploading outfile."
     default: "SFCA-Results"
   outfile-artifact-path:
-    required: false
+    required: true
     description: "Output from Code Analyzer generated using '--outfile <filename>.json' parameter. Should've been uploaded using 'actions/upload-artifact@v3'."
     default: 'sfca_results.json'
   code-analyzer-exit-code:

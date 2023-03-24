@@ -13,22 +13,37 @@ const SEVERITY_TO_EMOJI_MAP = new Map<number, string>([
 
 export class MarkdownCreator {
 
-    async summarize(jsonString: string, isDfa: boolean, codeAnalyzerExitCode?: number): Promise<void> {
+    async checkActionNeeded(codeAnalyzerExitCode?: string) {
+        // Continue only if exit code was provided. Else we'll figure out later.
+        if (codeAnalyzerExitCode) {
+            const exitCodeNum = parseInt(codeAnalyzerExitCode);
+            if (exitCodeNum === 0) {
+                this.successfulRun();
+            } else if (exitCodeNum >= 5) {
+                core.summary.addRaw(":no_entry_sign: Code Analyzer step failed. See logs for more information.");
+            } else {
+                core.info(`Valid exit code found for Code Analyzer: ${exitCodeNum}`);
+            }
+        }
+    }
+
+    async summarize(jsonString: string, isDfa: boolean): Promise<void> {
         try {
-            if (codeAnalyzerExitCode) {
-                if (codeAnalyzerExitCode === 0) {
-                    this.successfulRun();
-                    return;
-                } else if (codeAnalyzerExitCode >= 5) {
-                    throw new Error();
-                }
+            // Don't process further if result file is empty
+            if (!jsonString) {
+                throw new Error("No results found.")
             }
 
-            if (jsonString) {
-                this.summarizeResults(jsonString, isDfa);
-            }
+            this.summarizeResults(jsonString, isDfa);
+
         } catch (error) {
-            core.summary.addRaw(`:no_entry_sign: Encountered error while processing. You can find more information in the console logs.`)
+            // Print error message in MD if valid error message is available
+            if (error instanceof Error) {
+                core.summary.addRaw(`:no_entry_sign: Encountered error while processing: ${error}`);
+            }
+
+            // Rethrow to fail the step
+            throw error;
         } finally {
             await core.summary.write();
         }

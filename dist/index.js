@@ -139,24 +139,39 @@ const SEVERITY_TO_EMOJI_MAP = new Map([
     [5, ':warning:']
 ]);
 class MarkdownCreator {
-    summarize(jsonString, isDfa, codeAnalyzerExitCode) {
+    checkActionNeeded(codeAnalyzerExitCode) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                if (codeAnalyzerExitCode) {
-                    if (codeAnalyzerExitCode === 0) {
-                        this.successfulRun();
-                        return;
-                    }
-                    else if (codeAnalyzerExitCode >= 5) {
-                        throw new Error();
-                    }
+            // Continue only if exit code was provided. Else we'll figure out later.
+            if (codeAnalyzerExitCode) {
+                const exitCodeNum = parseInt(codeAnalyzerExitCode);
+                if (exitCodeNum === 0) {
+                    this.successfulRun();
                 }
-                if (jsonString) {
-                    this.summarizeResults(jsonString, isDfa);
+                else if (exitCodeNum >= 5) {
+                    core.summary.addRaw(":no_entry_sign: Code Analyzer step failed. See logs for more information.");
+                }
+                else {
+                    core.info(`Valid exit code found for Code Analyzer: ${exitCodeNum}`);
                 }
             }
+        });
+    }
+    summarize(jsonString, isDfa) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Don't process further if result file is empty
+                if (!jsonString) {
+                    throw new Error("No results found.");
+                }
+                this.summarizeResults(jsonString, isDfa);
+            }
             catch (error) {
-                core.summary.addRaw(`:no_entry_sign: Encountered error while processing. You can find more information in the console logs.`);
+                // Print error message in MD if valid error message is available
+                if (error instanceof Error) {
+                    core.summary.addRaw(`:no_entry_sign: Encountered error while processing: ${error}`);
+                }
+                // Rethrow to fail the step
+                throw error;
             }
             finally {
                 yield core.summary.write();
@@ -391,16 +406,16 @@ function run() {
             // Get all input values
             const outfileArtifactName = core.getInput('outfile-artifact-name');
             const outfileArtifactPath = core.getInput('outfile-artifact-path');
-            const codeAnalyzerExitCode = core.getInput('code-analyzer-exit-code');
+            const codeAnalyzerExitCode = core.getInput('code-analyzer-exit-code', { required: false });
             const runtype = core.getInput('runtype');
+            const mdCreator = new MarkdownCreator_1.MarkdownCreator();
+            mdCreator.checkActionNeeded(codeAnalyzerExitCode);
             // Download outfile and get JSON string
             const fileHandler = new FileHandler_1.FileHandler();
             const jsonStr = yield fileHandler.downloadOutfile(outfileArtifactName, outfileArtifactPath);
             // Generate markdown
-            const mdCreator = new MarkdownCreator_1.MarkdownCreator();
             const isDfa = runtype.toLocaleLowerCase() === 'dfa';
-            const exitCodeNum = (codeAnalyzerExitCode == undefined) ? undefined : parseInt(codeAnalyzerExitCode);
-            yield mdCreator.summarize(jsonStr, isDfa, exitCodeNum);
+            yield mdCreator.summarize(jsonStr, isDfa);
             core.info("Finished rendering markdown output.");
         }
         catch (error) {
