@@ -18,7 +18,7 @@ Code Analyzer Translator is a GitHub Action plugin that can help convert [Code A
 
 Code Analyzer Translator is best used when combined with Code Analyzer Action plugin. The invocations can be ordered as below:
 
-```
+```yaml
     - name: Execute Code Analyzer
       id: execute-code-analyzer
       uses: forcedotcom/code-analyzer-action
@@ -38,7 +38,7 @@ Code Analyzer Translator is best used when combined with Code Analyzer Action pl
 
 If you prefer to execute Code Analyzer with custom steps in your workflow, make sure you precede the invocation of Code Analyzer Translator with Code Analyzer execution and Artifact upload steps as shown below:
 
-```
+```yaml
           - name: Execute Code Analyzer
             run: |
               sfdx scanner:run --target <files> --outfile "sfca_results.json"
@@ -87,7 +87,11 @@ Code Analyzer Translator has been developed using Typescript. `action.yml` file 
 
 ## Contributing
 
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
+External contributions are welcome.
+
+### Build steps
+
+> Make sure you have Node LTS installed.
 
 Install the dependencies  
 ```bash
@@ -129,18 +133,3 @@ Your action is now published! :rocket:
 
 See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
 
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
-
-```yaml
-uses: ./
-with:
-  milliseconds: 1000
-```
-
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
-
-## Usage:
-
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
