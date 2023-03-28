@@ -64,18 +64,22 @@ You can refer to tdx23-sfca-demo to see this GitHub Action’s usage and output.
 
 ### `outfile-artifact-name`
 *Default value:* "SFCA-Results"
+
 Artifact name that was used while uploading the JSON outfile using [action/upload-artifact](https://github.com/actions/upload-artifact).
 
 ### `outfile-artifact-path`
 *Default value:* "sfca_results.json"
+
 Path value used while uploading the JSON outfile as an artifact with [action/upload-artifact](https://github.com/actions/upload-artifact).
 
 ### `runtype`
 *Default value:* "simple"
+
 Denotes the type of run Code Analyzer was executed with to collect the results to be translated. If `scanner:run` command was used, set parameter to "simple". If `scanner:run:dfa` command was used, set parameter to "dfa".
 
 ### `code-analyzer-exit-code`
 *Default value:* none
+
 Exit code that was returned from Code Analyzer’s execution. If available, helps with rendering more useful summary.
 
 ## Development
